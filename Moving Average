@@ -1,0 +1,45 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
+
+def moving_average(series, n):
+    return np.average(series[-n:])
+
+
+# plot Moving Average
+
+def plotMovingAverage(series, window, plot_intervals=False, scale=1.96, plot_anomalies=False):
+    """
+    series: dataframe with timeseries
+    window: rolling window size
+    plot_intervals: show confidence intervals
+    plot_anomalies: show anomalies
+    """
+    rolling_mean = series.rolling(window).mean()
+    plt.figure(figsize=(15, 5))
+    plt.title('Moving average\n window size = {}'.format(window))
+    plt.plot(rolling_mean, 'g', label='Rolling mean trend')
+    
+    # plot confidence invervals for smoothed values
+    if plot_intervals:
+        mae = mean_absolute_error(series[window:], rolling_mean[window:]) # 英文window之前数为NAN
+        deviation = np.std(series[window:] - rolling_mean[window:])
+        lower_bound = rolling_mean - (mae + scale * deviation)
+        upper_bound = rolling_mean + (mae + scale * deviation)
+        plt.plot(upper_bound, 'r--', label='Upper Bound / Lower Bound')
+        plt.plot(lower_bound, 'r--')
+        
+    # having the invervals, find abnormal values
+    if plot_anomalies:
+        anomalies = pd.DataFrame(index=series.index, columns=series.columns)
+        anomalies[series<lower_bound] = series[series<lower_bound]
+        anomalies[series>upper_bound] = series[series>upper_bound]
+        plt.plot(anomalies, 'ro', markersize=10)
+    
+    plt.plot(series[window:], label='Actual values')
+    plt.legend(loc='upper left')
+    plt.grid(True)
+    
+# This simple moving average doesn't capture trend and seasonality.
