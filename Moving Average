@@ -42,4 +42,15 @@ def plotMovingAverage(series, window, plot_intervals=False, scale=1.96, plot_ano
     plt.legend(loc='upper left')
     plt.grid(True)
     
-# This simple moving average doesn't capture trend and seasonality.
+
+# Weighted Moving Average
+
+def weighted_average(series, weights):
+    '''
+    calculate weighted average on series
+    '''
+    result = 0.0
+    weights.reverse()
+    for n in range(len(weights)):
+        result += series.iloc[-n-1] * weights[n]
+    return float(result)
